@@ -1,0 +1,5 @@
+# local packaging artifact
+student_ros.zip
+# accidentally generated ssh key files (control-char names) - DO NOT COMMIT
+student_ros/
+student_ros/.pub
