@@ -1,0 +1,49 @@
+T_matrix:
+- - 0.11546565592288971
+  - 0.9933114647865295
+  - 0.0
+  - 195.4363555908203
+- - -0.9933114647865295
+  - 0.11546565592288971
+  - 0.0
+  - 195.79666137695312
+- - 0.0
+  - 0.0
+  - 1.0
+  - 74.0
+- - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+calibration_type: storage_hand_eye
+description: Hand-eye calibration for storage area - transformation from storage coordinates
+  to robot base frame
+robot_points:
+- - 197.0
+  - 196.0
+  - 74.0
+- - 209.0
+  - 91.0
+  - 74.0
+- - 353.0
+  - 111.0
+  - 74.0
+- - 343.0
+  - 211.0
+  - 74.0
+storage_points:
+- - 0.0
+  - 0.0
+  - 0.0
+- - 105.0
+  - 0.0
+  - 0.0
+- - 105.0
+  - 149.0
+  - 0.0
+- - 0.0
+  - 149.0
+  - 0.0
+storage_size_mm:
+  height: 149
+  width: 105

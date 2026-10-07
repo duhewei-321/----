@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Simulated AngleMode action server for chapter examples."""
+import time
+import rclpy
+from rclpy.action import ActionServer, CancelResponse, GoalResponse
+from rclpy.node import Node
+from robot_arm_interfaces.action import AngleMode
+
+
+class AngleModeServer(Node):
+    def __init__(self):
+        super().__init__('angle_mode_server')
+        self._action_server = ActionServer(
+            self,
+            AngleMode,
+            'angle_mode',
+            execute_callback=self.execute_callback,
+            goal_callback=self.goal_callback,
+            cancel_callback=self.cancel_callback,
+        )
+        self.get_logger().info('AngleMode action server started: /angle_mode')
+
+    def goal_callback(self, goal_request):
+        self.get_logger().info(f'收到角度目标: {list(goal_request.angles)}, speed={goal_request.speed_ratio}')
+        return GoalResponse.ACCEPT
+
+    def cancel_callback(self, goal_handle):
+        self.get_logger().info('收到取消请求')
+        return CancelResponse.ACCEPT
+
+    def execute_callback(self, goal_handle):
+        target = [float(v) for v in goal_handle.request.angles]
+        speed_ratio = max(0.05, min(1.0, float(goal_handle.request.speed_ratio)))
+        steps = 10
+        duration = 2.0 / speed_ratio
+        start = time.perf_counter()
+        result = AngleMode.Result()
+
+        try:
+            for i in range(steps + 1):
+                if goal_handle.is_cancel_requested:
+                    goal_handle.canceled()
+                    result.success = False
+                    result.message = 'AngleMode action canceled'
+                    result.execution_time = time.perf_counter() - start
+                    result.final_angles = [0.0] * 6
+                    return result
+
+                progress = i / steps
+                feedback = AngleMode.Feedback()
+                feedback.elapsed_time = time.perf_counter() - start
+                feedback.progress = progress
+                feedback.current_angles = [a * progress for a in target]
+                feedback.status_message = f'Angle mode progress: {int(progress * 100)}%'
+                goal_handle.publish_feedback(feedback)
+
+                if i < steps:
+                    time.sleep(duration / steps)
+
+            result.success = True
+            result.message = 'AngleMode action completed (simulated)'
+            result.execution_time = time.perf_counter() - start
+            result.final_angles = target
+            goal_handle.succeed()
+            return result
+        except Exception as exc:
+            result.success = False
+            result.message = f'AngleMode action failed: {exc}'
+            result.execution_time = time.perf_counter() - start
+            result.final_angles = [0.0] * 6
+            goal_handle.abort()
+            return result
+
+
+def main():
+    rclpy.init()
+    node = AngleModeServer()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
